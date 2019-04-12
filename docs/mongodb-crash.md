@@ -5,12 +5,18 @@
 - [Reference](#reference)
 - [General Description](#general-description)
 - [What is MongoDB](#what-is-mongodb)
-  - [Introduction](##introduction)
-  - [Basic Commands](##basic-commands)
+  - [Introduction](#introduction)
+  - [Basic Commands](#basic-commands)
 - [Syntax](#syntax)
-  - [Collections](##collections)
-    - [Setup](##setup)
-    - [Adding Records](##adding-records)
+  - [Collections](#collections)
+    - [Setup](#setup)
+    - [Adding Records](#adding-records)
+    - [Collection Method Operators](#collection-method-operators)
+    - [Remove Entries](#remove-entries)
+  - [Lookups](#lookups)
+    - [Querying Objects](#querying-objects)
+    - [Querying Arrays](#querying-arrays)
+    - [Sorting](#sorting)
 
 ## Reference
 
@@ -97,6 +103,13 @@ Before we go through making and adding things to our database, we need to add a 
   - The "ok" key tells you if the operatino was successful
   - You can also use `> show collections` to show collections inside a database
 
+**Note: Here's a link to the MongoDB reference for [collection methods](https://docs.mongodb.com/manual/reference/method/js-collection/)**
+
+In addition, some of the methods used here, have the following, general format in some way:
+```
+  > db.collection.methodName({searchCriteria}, {thingToUpdateIfAny}, {additionalOptions})
+```
+
 #### Adding Records
 
 Now that we have our collection started, we can start adding documents and records.
@@ -136,14 +149,159 @@ Adding multiple users is pretty easy and more or less functions the same way as 
     })
   ```
 
-### Users
+If we then run `db.customers.find()` then it returns our three entries, with the "Joan Johnson" entry having a gender field even though the other two don't. In addition, MongoDB didn't yell at us for adding a new "gender" field, whereas in a relational database, it would yell at you for trying to add a field that's not been specified first.
+- we can also run `db.customers.find().pretty()` to make the returned output look nicer; this is optional though
 
-To create a user use:
+#### Updating Records
+
+We'll also need to be able to update records, and that's done with the below example:
 ```
-  > db.createUser({
-    user: "wilson",
-    pwd: "1234",
-    roles: ["readWrite", "dbAdmin"]
-  });
+db.customers.update({first_name: "John"}, {first_name: "John", last_name: "Doe", gender: "male"});
 ```
 
+- More generally speaking you use `db.customers.update()` like so:
+    ```
+      > db.customers.update({lookupCriteria}, {updatedEntry})
+    ```
+
+It's worth noting that if you're `lookupCriteria` field matches multiple entries, then MongoDB will update all of those. This functions pretty much the same way that SQL handles updates, so it's highly recommended that you don't use fields such as `first_name` for lookups.
+
+#### Collection Method Operators
+
+Note that you had to respecify the `first_name` and `last_name` fields even though they stayed the same/ were already there. If we didn't include it, then that entire entry would updated to **only** have the `gender` field rather than all three. We can use the `$set` keyword to only set the fields we want.
+
+```
+db.customers.update({first_name: "Steve"}, {$set: {gender: "male"}});
+```
+- This naturally works with currently existing fields as well
+
+We can also use the `$inc` field to increment fields like so:
+  ```
+    > db.customers.update({first_name: "Steve"}, {$inc: {age: 5}});
+  ```
+- To use it we need to spec the follwing: `{fieldName: number_to_increment_by}
+  - in the above example, we're telling MongoDB to increment the `age` field for any entry with a `first_name` field of "Steve" by 5
+
+There's also an `$unset` operator for removing fields from a record/ entry. It's used like so:
+  ```
+    > db.customers.update({first_name: "Steve"}, {$unset: {age: ""}});
+  ```
+- Note that the value for the field that you want to use `$unset` on doesn't affect the end result of the unset operation
+- If the field that you're trying to `$unset` doesn't exist, then MongoDB doesn't make any changes
+
+If a field doesn't exist and we want to add that in, then we can use the `upsert` option like so:
+
+  ```
+    > db.customers.update({first_name: "Mary"}, {first_name: "Mary", last_name: "Samson"}, {upsert: true});
+    WriteResult({
+      "nMatched" : 0,
+      "nUpserted" : 1,
+      "nModifed" : 0,
+      "_id" : ObjectId("foobar")
+    })
+  ```
+- The upsert lets you add new entries into your collection even if they don't exist as noted by the `"nUpserted" : 1` field in the write result
+
+We can also use the `$rename` operator to rename a field. Syntax below:
+```
+  > db.customers.update({first_name: "Steve"}, {$rename: {"gender" : "sex"}});
+```
+
+#### Remove Entries
+
+To remove stuff use:
+```
+  > db.customers.remove({first_name: "Steve"});
+```
+
+Note that by default it'd try to match every entry with the `first_name` of "Steve". We can use other options to modify the way MongoDB performs the op.
+
+For instance, to change the first entry that matches the search criteria we can use the `justOne` option as seen below:
+```
+  > db.customers.remove({first_name: "Steve"}, {justOne: true});
+```
+
+### Lookups
+
+To find stuff, as mentioned earlier, we can use `db.collection.find({searchCriteria})`. If we wanted to find one entry or another entry, we'd need to use the `$or` operator like below:
+  ```
+    > db.customers.find({$or: [
+      {first_name: "Sharon"},
+      {first_name: "Troy"}
+    ]});
+  ```
+
+We also have greater than and less than operators. To use them, see the below syntax:
+```
+  > db.customers.find({age: {
+    $lt: 40
+  }});
+```
+- where `$gt` is greater than and `$lt` is less than
+- the above query would fetch every customer that's younger than 40
+
+In addition to greater than and less than, we have greater than or equal to and less than or equal to.
+- they're represented with the `$gte` and `$lte` operators respectively
+
+#### Querying Objects
+
+Within our example database, if we wanted to find residents in Boston, that's part of the address object within the entry. To perform a lookup for it, we'd need to use the below:
+  ```
+    > db.customers.find({"address.city": "Boston"});
+  ```
+- First, note that `address` is an object that looks like the below:
+  ```
+    {
+      address: {
+        street: "foo",
+        city: "bar",
+        state: "baz"
+      }
+    }
+  ```
+- Also note that we had to wrap `address.city` in quotes
+  - if we didn't wrap it in quotes, MongoDB would give us a syntax error
+
+#### Querying Arrays
+
+Our example database also has arrays of values within fields. To query those we'd need to use the below:
+  ```
+    > db.customers.find({memberships: "mem1"});
+  ```
+- This will return every entry that has "mem1" as a value inside the array
+
+#### Sorting
+
+We can also sort whatever we find with whatever criteria we want. To sort by last name in ascending order, we'd use the below:
+  ```
+    > db.customers.find().sort({last_name: 1});
+  ```
+- For descending, we'd set it to `db.customers.find().sort({last_name: -1});`
+
+We can also count entries as seen below:
+  ```
+    > db.customers.find().count()
+    8
+  ```
+- and we can perform fancier counts by including a search criteria inside the `.find()` method like so:
+  ```
+    > db.customers.find({"address.city": "Boston"}).count();
+  ```
+
+We can also limit the entries returned like so:
+```
+  > db.customers.find().limit(4);
+```
+
+And naturally we can chain all of these methods together like so:
+```
+  > db.customers.find().limit(4).sort({last_name: 1}).pretty();
+```
+
+We can also loop over each field that matches a search criteria with `forEach()` as seen below:
+```
+  > db.customers.find().forEach(function(doc){print("Customer Name:" + doc.first_name)});
+```
+- This pretty much works the same way that JavaScript does it with some differences
+  - we can still concat strings as seen above
+  - we use the `print()` method to print out a string to the console
