@@ -1,0 +1,11 @@
+//- NOTE pug is weird, in that it uses indentation for nesting
+//- ALSO NOTE Pug.js uses //- for comments
+extends layout
+
+block content
+    h1 #{title}
+    ul
+      each article, i in articles
+        li
+          p= article.title
+          p= article.body
