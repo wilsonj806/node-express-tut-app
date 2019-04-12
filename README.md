@@ -4,7 +4,7 @@
 
 A quick Node/Express Passport.js tutorial project.
 
-Notes based off of Traversy Media's [Node Login with Passport](https://www.youtube.com/watch?v=Z1ktxiqyiLA&list=PLillGF-RfqbbqvbObyE7CldS5-trkefnB&index=2&t=1s) project series and the [repository](https://github.com/bradtraversy/node_passport_login) for said project.
+Notes based off of Traversy Media's [Node and Express from scratch](https://www.youtube.com/playlist?list=PLillGF-RfqbYRpji8t4SxUkMxfowG4Kqp) project series and the [repository](https://github.com/bradtraversy/nodekb) for said project.
 
 ## Related Resources
 
