@@ -3,7 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 
 // init mongoose and database connection
-mongoose.connect('mongodb://localhost:27017/nodkb', {useMongoClient: true});
+mongoose.connect('mongodb://localhost:27017/nodkb', {useNewUrlParser: true});
 let db = mongoose.connection;
 
 // check connection
@@ -33,19 +33,28 @@ app.set('view engine', 'pug');
   app.use(express.static(path.join(__dirname, 'public')));
 
 // Home route
-app.get('/', function(req, res) {
+app.get('/', (req, res) => {
   // fetch articles, pass the articles into the response for rendering
   Article.find({}, (error, articles) => {
     if (error) {
       console.log(error);
     } else {
       res.render('index', {
-        "title": 'Hello',
+        "title": 'Articles',
         "articles": articles
       });
     }
   });
 });
+
+// GET single article route
+app.get('/article/:id',(req, res) => {
+  Article.findById(req.params.id, (err, article) => {
+    err ? console.error(err) : res.render('article', {
+      article: article
+    });
+  })
+})
 
 // Add articles route
 app.get('/articles/add', (req, res) => {
