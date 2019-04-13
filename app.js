@@ -18,13 +18,19 @@ db.on('error', function(error){console.error(error)});
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+  // init Express built in middleware that replaces body-parser
+  app.use(express.json());
+  app.use(express.urlencoded({extended: false}));
+
 // bring in DB Models
 let Article = require('./models/article');
-
 
 // Load Pug, the View Engine
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
+
+  // set static Public folder
+  app.use(express.static(path.join(__dirname, 'public')));
 
 // Home route
 app.get('/', function(req, res) {
@@ -42,10 +48,22 @@ app.get('/', function(req, res) {
 });
 
 // Add articles route
-
 app.get('/articles/add', (req, res) => {
   res.render('add_article', {
     title: 'Add Article',
+  });
+});
+
+// POST Add submit form route
+app.post('/articles/add', (req, res) => {
+  let article = new Article();
+  const { title, author, body } = req.body;
+  article.title = title;
+  article.author = author;
+  article.body = body;
+
+  article.save(function(error){
+    error ? console.error(`Error ahead:${error}`) : res.redirect('/');
   });
 });
 

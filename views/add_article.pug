@@ -1,5 +1,18 @@
 //- NOTE you want a base layout that you extend in other views that way you don't repeat yourself
+//- also note that tag attributes are put after the tag name like: form(method='', action='', id='',... etc)
 extends layout
 
 block content
-    h1 #{title}
+  h1 #{title}
+  form(method='POST', action='/articles/add')
+    //- div is default tag if you don't add anything else
+    #form-group
+      label Title:
+        input.form-control(name='title', type='text')
+    #form-group
+      label Author:
+        input.form-control(name='author', type='text')
+    #form-group
+      label Body:
+        textarea.form-control(name='body')
+    input.btn.btn-primary(type='submit', value='Submit')
