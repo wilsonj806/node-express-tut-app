@@ -1,26 +1,73 @@
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const flash = require('connect-flash');
 
+/** MongoDB/ Mongoose setup
+ *
+ *
+ */
 // init mongoose and database connection
 mongoose.connect('mongodb://localhost:27017/nodkb', {useNewUrlParser: true});
 let db = mongoose.connection;
 
 // check connection
-db.once('open', function(){
+db.once('open', () => {
   console.log('Connected to MongoDB')
 });
 
 // check for DB errors
-db.on('error', function(error){console.error(error)});
+db.on('error', (error) => {console.error(error)});
 
-// init express, set port
+/** Express, Pug.js, Middleware, and public folder setup
+ *
+ *
+ */
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-  // init Express built in middleware that replaces body-parser
-  app.use(express.json());
-  app.use(express.urlencoded({extended: false}));
+// Use Express body-parser middleware
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+
+// Use Express session middleware
+app.use(session({
+  secret: 'keyboard cat',
+  resave: true,
+  saveUninitialized: true,
+}));
+
+// Use Express messages middleware
+app.use(flash());
+app.use((req, res, next) => {
+  // creates a variable called locals to the response
+    // also requiring express-messages
+  res.locals.messages = require('express-messages')(req, res);
+  next();
+});
+
+// Use Express validator
+// REVIEW
+// TODO update this for express-validator v4.x and up
+const expressValidator = require('express-validator');
+app.use(expressValidator({
+  errorFormatter: function(param, msg, value) {
+      var namespace = param.split('.')
+      , root    = namespace.shift()
+      , formParam = root;
+
+    while(namespace.length) {
+      formParam += '[' + namespace.shift() + ']';
+    }
+    return {
+      param : formParam,
+      msg   : msg,
+      value : value
+    };
+  }
+}));
 
 // bring in DB Models
 let Article = require('./models/article');
@@ -31,6 +78,11 @@ app.set('view engine', 'pug');
 
   // set static Public folder
   app.use(express.static(path.join(__dirname, 'public')));
+
+/** Express Routing
+ *
+ *
+ */
 
 // Home route
 app.get('/', (req, res) => {
@@ -82,8 +134,13 @@ app.post('/articles/add', (req, res) => {
   article.author = author;
   article.body = body;
 
-  article.save(function(error){
-    error ? console.error(`Error ahead:${error}`) : res.redirect('/');
+  article.save((error) => {
+    if (error) {
+      console.error(`Error ahead:${error}`)
+    } else {
+      req.flash('success', 'Article Added');
+      res.redirect('/');
+    }
   });
 });
 
@@ -98,7 +155,12 @@ app.post('/article/edit/:id', (req, res) => {
   let query = {_id: req.params.id}
 
   Article.update(query, article, function(error){
-    error ? console.error(`Error ahead:${error}`) : res.redirect('/');
+    if (error) {
+      console.error(`Error ahead:${error}`)
+    } else {
+      res.flash('success', 'Article Updated');
+      res.redirect('/');
+    }
   });
 });
 
@@ -110,25 +172,4 @@ app.delete('/article/:id', (req, res) => {
   })
 })
 
-app.listen(PORT, function() {console.log(`Server started on port ${PORT}`)});
-
-/* let articles = [
-  {
-    id: 1,
-    title: 'Article 1',
-    author: 'brad traversy',
-    body: 'This is article 1'
-  },
-  {
-    id: 2,
-    title: 'Article 2',
-    author: 'wilson',
-    body: 'This is article 2'
-  },
-  {
-    id: 3,
-    title: 'Article 3',
-    author: 'john doe',
-    body: 'This is article 3'
-  }
-]; */
+app.listen(PORT, () => {console.log(`Server started on port ${PORT}`)});

@@ -38,3 +38,44 @@ html
 Mongoose is an Object Relational Mapping tool for MongoDB. MongoDB is a type of NoSQL database as covered in the [MongoDB crash course](./mongodb-crash.md) and is very flexible. However, because it's super flexible it doesn't really have structure to how you relate your data to each other.
 
 Mongoose lets you structure your data on a lighter level than SQL and on an application level.
+
+### Express
+
+Express has been covered already in the tutorial linked in the References section of this doc, so this section is pretty much adding onto it.
+
+As of Express v4.x, ALL BUILT-IN MIDDLEWARE HAS BEEN REMOVED FROM Express.
+- This means you need to download the individual packages if you want to use them
+- i.e no more of this:
+  ```js
+  // DEPRECIATED
+  const app = express();
+  app.use(express.json());
+
+  // USE THIS INSTEAD
+  const app = express();
+  const bodyParser = require('body-parser');
+  app.user(bodyParser.json());
+  ```
+#### Express Middleware Notes
+
+Note that for the express `express-validator` middleware, the scripting to use it, found in the `./depreciated` directory, is different from the `express-validator` docs. Be sure to check the docs for more.
+- the below syntax is depreciated as of [**v4.x**](https://express-validator.github.io/docs/legacy-api.html) and up of `express-validator`
+  ```js
+    const expressValidator = require('express-validator);
+    router.use(expressValidator({
+      errorFormatter: function(param, msg, value) {
+          var namespace = param.split('.')
+          , root    = namespace.shift()
+          , formParam = root;
+
+        while(namespace.length) {
+          formParam += '[' + namespace.shift() + ']';
+        }
+        return {
+          param : formParam,
+          msg   : msg,
+          value : value
+        };
+      }
+    }));
+  ```
