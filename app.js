@@ -54,7 +54,18 @@ app.get('/article/:id',(req, res) => {
       article: article
     });
   })
-})
+});
+
+// GET edit single article form route
+app.get('/article/edit/:id',(req, res) => {
+  Article.findById(req.params.id, (err, article) => {
+    err ? console.error(err) : res.render('edit_article', {
+      title: "Edit Article",
+      article: article
+    });
+  })
+});
+
 
 // Add articles route
 app.get('/articles/add', (req, res) => {
@@ -75,6 +86,29 @@ app.post('/articles/add', (req, res) => {
     error ? console.error(`Error ahead:${error}`) : res.redirect('/');
   });
 });
+
+// POST Update single article route
+app.post('/article/edit/:id', (req, res) => {
+  let article = {};
+  const { title, author, body } = req.body;
+  article.title = title;
+  article.author = author;
+  article.body = body;
+
+  let query = {_id: req.params.id}
+
+  Article.update(query, article, function(error){
+    error ? console.error(`Error ahead:${error}`) : res.redirect('/');
+  });
+});
+
+// DELETE Delete request
+app.delete('/article/:id', (req, res) => {
+  let query = {_id: req.params.id};
+  Article.remove(query, (err) => {
+    err ? console.log(err) : res.send('Success, delete request completed');
+  })
+})
 
 app.listen(PORT, function() {console.log(`Server started on port ${PORT}`)});
 
