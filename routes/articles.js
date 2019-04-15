@@ -5,6 +5,7 @@
  */
 
 const express = require('express');
+const { body, validationResult } = require('express-validator/check');
 const router = express.Router();
 
 let Article = require('../models/article');
@@ -28,22 +29,21 @@ router.get('/add', (req, res) => {
 });
 
 // POST Add submit form route
-router.post('/add', (req, res) => {
-  /**
-   * REVIEW
-   * TODO Check if the below and GET errors section is depreciated on express-validator v4.x+
-   */
-  req.checkBody('title', 'Title is required').notEmpty();
-  req.checkBody('author', 'Author is required').notEmpty();
-  req.checkBody('body', 'Body is required').notEmpty();
-
+router.post('/add',
+  [
+    // .isEmpty() enforces empty fields being true
+    body('title', 'Title is required').exists({checkFalsy: true}).not().isEmpty(),
+    body('author', 'Author is required').exists({checkFalsy: true}).not().isEmpty(),
+    body('body', 'Body is required').exists({checkFalsy: true}).not().isEmpty()
+  ],
+  (req, res) => {
   // GET errors if any
-  let errors = req.validationErrors();
+  let errors = validationResult(req);
 
-  if (errors) {
+  if (!errors.isEmpty()) {
     res.render('add_article', {
       title: 'Add Article',
-      errors: errors
+      errors: errors.mapped()
     })
   } else {
     let article = new Article();

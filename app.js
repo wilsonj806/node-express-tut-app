@@ -52,30 +52,6 @@ app.use((req, res, next) => {
   next();
 });
 
-/**
- * Use Express validator
- * REVIEW
- * TODO update this for express-validator v4.x and up
-*/
-
-const expressValidator = require('express-validator');
-app.use(expressValidator({
-  errorFormatter: function(param, msg, value) {
-      var namespace = param.split('.')
-      , root    = namespace.shift()
-      , formParam = root;
-
-    while(namespace.length) {
-      formParam += '[' + namespace.shift() + ']';
-    }
-    return {
-      param : formParam,
-      msg   : msg,
-      value : value
-    };
-  }
-}));
-
 // bring in DB Models
 let Article = require('./models/article');
 
