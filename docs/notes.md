@@ -80,7 +80,7 @@ Note that for the express `express-validator` middleware, the scripting to use i
     }));
   ```
 - For additional validation methods, check the [repository for validator.js](https://github.com/chriso/validator.js)
-### PassportJS
+### PassportJS and BCryptJs
 
 Passport.js is a simple middleware for Node.js for authentication. Installation is fairly simple but you need to install both the core module **AND** the strategy for how you want to authenticate. For this project, we use the *local strategy* as seen in the below NPM command line script:
   ```bat
@@ -88,5 +88,7 @@ Passport.js is a simple middleware for Node.js for authentication. Installation 
   ```
 - Additional strategies can be found in the [Passport.js page](http://www.passportjs.org/packages/) for it
 
+It's pretty standard to store your passport strategy inside a config folder.
 
-### BCryptJS
+
+[BCrypt](http://bcrypt.sourceforge.net/) is "a cross-platform file encryption utility". It's used to encrypt sensitive data so that **you're not storing data in plain text**.

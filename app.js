@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const flash = require('connect-flash');
+const passport = require('passport');
+
+const config = require('./config/database');
 
 /** MongoDB/ Mongoose setup
  *
@@ -11,7 +14,7 @@ const flash = require('connect-flash');
  *
  */
 // init mongoose and database connection
-mongoose.connect('mongodb://localhost:27017/nodkb', {useNewUrlParser: true});
+mongoose.connect(config.database, {useNewUrlParser: true});
 let db = mongoose.connection;
 
 // check connection
@@ -49,6 +52,19 @@ app.use((req, res, next) => {
    * also requiring express-messages
    */
   res.locals.messages = require('express-messages')(req, res);
+  next();
+});
+
+// Use PassportJs config
+require('./config/passport')(passport);
+
+// PassportJs middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.get('*', (req, res, next) => {
+  // set up global user variable
+  res.locals.user = req.user || null;
   next();
 });
 
