@@ -6,6 +6,8 @@ A quick Node/Express Passport.js tutorial project.
 
 Notes based off of Traversy Media's [Node and Express from scratch](https://www.youtube.com/playlist?list=PLillGF-RfqbYRpji8t4SxUkMxfowG4Kqp) project series and the [repository](https://github.com/bradtraversy/nodekb) for said project.
 
+Also note that this tutorial project will be using the v5.x API for the *express-validator* middleware package.
+
 ## Related Resources
 
 Reference the below for related notes:

@@ -79,3 +79,14 @@ Note that for the express `express-validator` middleware, the scripting to use i
       }
     }));
   ```
+- For additional validation methods, check the [repository for validator.js](https://github.com/chriso/validator.js)
+### PassportJS
+
+Passport.js is a simple middleware for Node.js for authentication. Installation is fairly simple but you need to install both the core module **AND** the strategy for how you want to authenticate. For this project, we use the *local strategy* as seen in the below NPM command line script:
+  ```bat
+    npm i passport passport-local
+  ```
+- Additional strategies can be found in the [Passport.js page](http://www.passportjs.org/packages/) for it
+
+
+### BCryptJS

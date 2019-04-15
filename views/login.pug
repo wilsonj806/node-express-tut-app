@@ -1,0 +1,13 @@
+extends layout
+block content
+  h1 #{title}
+  form(method='POST', action='/users/login')
+    //- div is default tag if you don't add anything else
+    #form-group
+      label User Name:
+        input.form-control(name='username', type='text')
+    #form-group
+      label Password:
+        input.form-control(name='password', type='password')
+    input.btn.btn-primary(type='submit', value='Submit')
+    a.btn.btn-secondary(href='/users/register') Sign Up

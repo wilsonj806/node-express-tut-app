@@ -32,9 +32,9 @@ router.get('/add', (req, res) => {
 router.post('/add',
   [
     // .isEmpty() enforces empty fields being true
-    body('title', 'Title is required').exists({checkFalsy: true}).not().isEmpty(),
-    body('author', 'Author is required').exists({checkFalsy: true}).not().isEmpty(),
-    body('body', 'Body is required').exists({checkFalsy: true}).not().isEmpty()
+    body('title', 'Title is required').exists({checkFalsy: true}),
+    body('author', 'Author is required').exists({checkFalsy: true}),
+    body('body', 'Body is required').exists({checkFalsy: true})
   ],
   (req, res) => {
   // GET errors if any
