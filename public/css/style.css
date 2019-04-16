@@ -9,3 +9,16 @@
   background-color: #dff0d8;
   border-color: #d6e9c6;
 }
+
+.text-light:visited{
+  color: grey;
+}
+
+/* @media (min-width: 1280px) {
+  .navbar-toggler {
+    display: none;
+  }
+  .navbar-nav {
+    display: inline-block;
+  }
+} */

@@ -9,20 +9,29 @@ const { body, validationResult } = require('express-validator/check');
 const router = express.Router();
 
 let Article = require('../models/article');
+let User = require('../models/user');
 
 // GET edit single article form route
-router.get('/edit/:id',(req, res) => {
+router.get('/edit/:id', ensureAuthenticated, (req, res) => {
   Article.findById(req.params.id, (err, article) => {
-    err ? console.error(err) : res.render('edit_article', {
-      title: "Edit Article",
-      article: article
-    });
+    if (article.author !== req.user._id) {
+      req.flash('danger', 'Not authorized to access this resource');
+      res.redirect('/');
+    } else if (err) {
+      console.log(err);
+      return;
+    } else {
+      res.render('edit_article', {
+        title: "Edit Article",
+        article: article
+      });
+    }
   })
 });
 
 
 // Add articles route
-router.get('/add', (req, res) => {
+router.get('/add', ensureAuthenticated, (req, res) => {
   res.render('add_article', {
     title: 'Add Article',
   });
@@ -31,9 +40,8 @@ router.get('/add', (req, res) => {
 // POST Add submit form route
 router.post('/add',
   [
-    // .isEmpty() enforces empty fields being true
     body('title', 'Title is required').exists({checkFalsy: true}),
-    body('author', 'Author is required').exists({checkFalsy: true}),
+    // body('author', 'Author is required').exists({checkFalsy: true}),
     body('body', 'Body is required').exists({checkFalsy: true})
   ],
   (req, res) => {
@@ -47,9 +55,10 @@ router.post('/add',
     })
   } else {
     let article = new Article();
-    const { title, author, body } = req.body;
+    const { title, body } = req.body;
     article.title = title;
-    article.author = author;
+    // add the loggined in User's id in as the author
+    article.author = req.user._id;
     article.body = body;
 
     article.save((error) => {
@@ -85,20 +94,45 @@ router.post('/edit/:id', (req, res) => {
 
 // DELETE Delete request
 router.delete('/:id', (req, res) => {
+  if (!req.user._id) {
+    res.status(500).send();
+  }
   let query = {_id: req.params.id};
-  Article.remove(query, (err) => {
-    err ? console.log(err) : res.send('Success, delete request completed');
-  })
+  Article.findById(req.params.id, (err, article) => {
+    if (article.author !== req.user._id) {
+      res.status(500).send();
+    } else {
+      Article.remove(query, (err) => {
+        err ? console.log(err) : res.send('Success, delete request completed');
+      });
+    }
+  });
 });
 
 // GET single article route
 router.get('/:id',(req, res) => {
   Article.findById(req.params.id, (err, article) => {
-    err ? console.error(err) : res.render('article', {
-      article: article
+    User.findById(article.author, (err, user) => {
+      err ? console.error(err) : res.render('article', {
+        article: article,
+        author: user.name
+      });
     });
   })
 });
 
+/** Access control
+ * Express doesn't like it if you use arrow functions inside stuff
+ *
+ * */
+
+function ensureAuthenticated(req, res, next) {
+  if(req.isAuthenticated()) {
+    next();
+  } else{
+    req.flash('danger', 'Not logged in, please log in');
+    res.redirect('/users/login');
+  }
+};
 
 module.exports = router;

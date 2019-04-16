@@ -10,7 +10,7 @@ html
     link(rel='stylesheet', href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', integrity='sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T', crossorigin='anonymous')
     link(rel='stylesheet', href='/css/style.css')
   body
-    nav.navbar.navbar-dark.bg-dark
+    nav.navbar.navbar-dark.bg-dark.navbar-expand-md
       .container
         .navbar-header
           button.navbar-toggler(type='button', data-toggle='collapse', data-target='#navbar', aria-controls='navbar', aria-expanded='false', aria-label='Toggle navigation')
@@ -18,20 +18,18 @@ html
           a.navbar-brand(href='/') KnowledgeBase
         #navbar.collapse.navbar-collapse
           ul.nav.navbar-nav
-            li
-              a(href='/') Home
-            //- if user
-            li
-              a(href='/articles/add') Add Article
-          ul.nav.navbar-nav.navbar-right
+            li.nav-item.mx-2
+              a.text-light(href='/') Home
             if user
-              li
-                a(href='/users/logout') Logout
+              li.nav-item.mx-2
+                a.text-light(href='/articles/add') Add Article
+              li.nav-item.mx-2
+                a.text-light(href='/users/logout') Logout
             else
-              li
-                a(href='/users/register') Register
-              li
-                a(href='/users/login') Login
+              li.nav-item.mx-2
+                a.text-light(href='/users/register') Register
+              li.nav-item.mx-2
+                a.text-light(href='/users/login') Login
     .container.my-3
       != messages('message', locals)
       if errors
